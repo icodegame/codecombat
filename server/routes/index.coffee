@@ -122,6 +122,7 @@ module.exports.setup = (app) ->
   app.post('/db/classroom/:handle/invite-members', mw.classrooms.inviteMembers)
   app.get('/db/classroom/:handle/member-sessions', mw.classrooms.fetchMemberSessions)
   app.get('/db/classroom/:handle/members', mw.classrooms.fetchMembers) # TODO: Use mw.auth?
+  app.delete('/db/classroom/:classroomID/members/:memberID', mw.classrooms.deleteMember)
   app.post('/db/classroom/:classroomID/members/:memberID/reset-password', mw.classrooms.setStudentPassword)
   app.post('/db/classroom/:anything/members', mw.auth.checkLoggedIn(), mw.classrooms.join)
   app.post('/db/classroom/:handle/update-courses', mw.classrooms.updateCourses)

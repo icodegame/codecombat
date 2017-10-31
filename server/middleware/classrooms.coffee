@@ -143,6 +143,29 @@ module.exports =
 
     res.status(200).send(memberObjects)
 
+  deleteMember: wrap (req, res, next) ->
+    userID = req.params.memberID
+    throw new errors.UnprocessableEntity('Member ID must be a MongoDB ID') unless utils.isID(userID)
+    Classroom.findById req.params.classroomID, (err, classroom) =>
+      throw new errors.InternalServerError('Database error, ' + err) if err
+      throw new errors.NotFound('No classroom found with that ID') if not classroom
+      if not _.any(classroom.get('members'), (memberID) -> memberID.toString() is userID)
+        throw new errors.Forbidden()
+      ownsClassroom = classroom.get('ownerID').equals(req.user.get('_id'))
+      removingSelf = userID is req.user.id
+      unless ownsClassroom or removingSelf
+        throw new errors.Forbidden()
+      # # Redundant with above error case?
+      # alreadyNotInClassroom = not _.any classroom.get('members') or [], (memberID) -> memberID.toString() is userID
+      # return @sendSuccess(res, @formatEntity(req, classroom)) if alreadyNotInClassroom
+      
+      members = _.clone(classroom.get('members'))
+      members = (m for m in members when m.toString() isnt userID)
+      classroom.set('members', members)
+      classroom.save (err, classroom) =>
+        throw new errors.InternalServerError(err) if err
+        res.status(200).send(classroom.toObject())
+
   fetchPlaytimes: wrap (req, res, next) ->
     # For given courseID, returns array of course/level IDs and slugs, and an array of recent level sessions
     # TODO: returns on this are pretty weird, because the client calls it repeatedly for more data

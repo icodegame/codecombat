@@ -432,7 +432,7 @@ describe 'POST /db/classroom/-/members', ->
     expect(res.statusCode).toBe(401)
     done()
 
-describe 'DELETE /db/classroom/:id/members', ->
+describe 'DELETE /db/classroom/:classroomID/members/:memberID', ->
 
   beforeEach utils.wrap (done) ->
     yield utils.clearModels([User, Classroom])
